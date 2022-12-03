@@ -54,13 +54,41 @@ class MultipartFileUploadController {
   //The etag is a List [partNUmber, versionId]
   final List<List<dynamic>> etagsLists = [];
 
+  bool _uploadPaused = false;
+
+  //This gets the status of the upload.
+  bool get uploadPaused => _uploadPaused;
+
+  set uploadPaused(bool status) {
+    //Set the uploadPaused value to the status and call the pauseUpload Function here.
+    _uploadPaused = true;
+  }
+
+  //This variable pathsThatHaveBeenUploaded is only used for resume Multipart uploads
+  //It is a list containing the parts that have been uploaded.
+  //The chunk indexes with matching part numbers are not included when the file chunk indexes is
+  //Being calculated.
+
+  final List<int> alreadyUploadedParts = [];
+
+  getPartsThatHaveBeenUploaded() {
+    //This gets the parts that have been uploaded from the Etag lists supplied.
+
+    for (var eTagList in etagsLists) {
+      //Each etag list is of form [partNumber, versionId]
+      alreadyUploadedParts.add(eTagList[0]);
+    }
+
+    print(alreadyUploadedParts);
+  }
+
   // List<List<dynamic>> get eTagLists => _etagsLists;
 
   void addEtag(List newEtag) {
     etagsLists.add(newEtag);
   }
 
-  void addAll(List<List<dynamic>> eTags) {
+  void addAllEtagLists(List<List<dynamic>> eTags) {
     etagsLists.addAll(eTags);
   }
 
@@ -226,7 +254,10 @@ class MultipartFileUploadController {
 
     CreateChunkSizesIndexesConfig createChunkSizesIndexesConfig =
         CreateChunkSizesIndexesConfig(
-            numberOfChunks: numberOfChunks, chunkSize: chunkSize);
+      numberOfChunks: numberOfChunks,
+      chunkSize: chunkSize,
+      alreadyUploadParts: alreadyUploadedParts,
+    );
 
     //TODO: Use the compute function in a flutter app.
 
@@ -273,12 +304,17 @@ List<List<int>> createChunkIndexes(CreateChunkSizesIndexesConfig parameters) {
 
   final List<List<int>> fileChunksIndexes = [];
   for (int i = 0; i < parameters.numberOfChunks + 1; i++) {
+    if (parameters.alreadyUploadParts.contains(i + 1)) {
+      //The part has been uploaded before. Skip to the next one
+      continue;
+    }
+
     if (i == parameters.numberOfChunks) {
-      fileChunksIndexes
-          .add([fileChunksIndexes.length + 1, parameters.chunkSize * i]);
+      //This is the last chunk to be uploaded.
+      fileChunksIndexes.add([i + 1, parameters.chunkSize * i]);
     } else {
       fileChunksIndexes.add([
-        fileChunksIndexes.length + 1,
+        i + 1,
         parameters.chunkSize * i,
         parameters.chunkSize * i + parameters.chunkSize
       ]);

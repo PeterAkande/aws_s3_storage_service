@@ -17,12 +17,71 @@ testFunctions() async {
   print(Directory.current);
 
   // await testFileUpload();
-  await testMultipartUpload();
+  // await testMultipartUpload();
+
+  await testResumeMultipartUpload();
+}
+
+Future testResumeMultipartUpload() async {
+  String imageName = 'test.mp4';
+  File file = File(p.join(Directory.current.path, 'test_files', imageName));
+
+  MultipartUploadConfig config = MultipartUploadConfig(
+    file: file,
+    url: 'file/f$imageName',
+    host: host,
+    resumeMultipart: true,
+    versionId:
+        'Zm9F2QhTuSZQHhnw1O8sThNk9fZ71lAUf20oTUQ11NrUaQy5DUwZ8oZ7fXuxCZywyY8mwUqsa54M3yg1S2QFIWGV.kv_QiMAxGlNHC55OAzBlDIusdJJ2jLF7qaQk9yg',
+    etagsLists: [
+      [2, "1ee28a7ac06786aff26d47298674c847"],
+      [1, "18cc73a82389202aa085ee5751666726"],
+      [4, "bf41ee73393dbfa1a5327fbb50aff054"],
+      [5, "2848ec759573e3c5f6cadf1145e9efd9"]
+    ],
+  );
+
+  MultipartFileUpload multipartFileUpload = MultipartFileUpload(
+    config: config,
+
+    onError: (error, list, s) {
+      print('An error occurred $error');
+    },
+
+    //The function onVersionIdCreated is called when the version id is just created.
+    //Since the version is always just created for a new multipart upload, It is basically only
+    //Needed when a new Multipart upload is done.
+    //The version id is a parameter. The version id can be cached for further use.
+    //The ball is in your court to do anything with the version id.
+    onVersionIdCreated: (versionId) => print('version id created $versionId'),
+
+    //Th e
+    onPartUploadComplete: (etagList, versionId) => print(
+        'Part upload completed ---> etagList is $etagList and versionId is $versionId'),
+    onUploadComplete: (etagList, versionId) => print(
+        'Part upload completed ---> etagList is $etagList and versionId is $versionId'),
+  );
+
+  multipartFileUpload.uploadCompletedState.listen((event) {
+    //Event is a boolean. This is true when the file upload is done
+    print('Upload State $event');
+  });
+
+  multipartFileUpload.uploadProgress.listen((event) {
+    print('Upload progress \n${event[0]} / ${event[1]}');
+  });
+
+  bool preparingSuccessful =
+      await multipartFileUpload.prepareMultipartRequest();
+
+  if (preparingSuccessful) {
+    await multipartFileUpload.upload();
+  }
 }
 
 Future testMultipartUpload() async {
-  String imageName = 'img_1.jpg';
-  File file = File(p.join(Directory.current.path, imageName));
+  String imageName = 'test.mp4';
+  File file = File(p.join(Directory.current.path, 'test_files', imageName));
 
   MultipartUploadConfig config =
       MultipartUploadConfig(file: file, url: 'file/f$imageName', host: host);
@@ -32,7 +91,15 @@ Future testMultipartUpload() async {
     onError: (error, list, s) {
       print('An error occurred $error');
     },
+
+    //The function onVersionIdCreated is called when the version id is just created.
+    //Since the version is always just created for a new multipart upload, It is basically only
+    //Needed when a new Multipart upload is done.
+    //The version id is a parameter. The version id can be cached for further use.
+    //The ball is in your court to do anything with the version id.
     onVersionIdCreated: (versionId) => print('version id created $versionId'),
+
+    //Th e
     onPartUploadComplete: (etagList, versionId) => print(
         'Part upload completed ---> etagList is $etagList and versionId is $versionId'),
     onUploadComplete: (etagList, versionId) => print(
@@ -40,6 +107,7 @@ Future testMultipartUpload() async {
   );
 
   multipartFileUpload.uploadCompletedState.listen((event) {
+    //Event is a boolean. This is true when the file upload is done
     print('Upload State $event');
   });
 

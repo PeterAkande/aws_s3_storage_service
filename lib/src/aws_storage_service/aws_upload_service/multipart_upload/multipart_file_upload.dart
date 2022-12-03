@@ -4,7 +4,6 @@ import 'package:aws_storage_service/src/aws_storage_service.dart';
 import 'package:aws_storage_service/src/aws_storage_service/aws_upload_service/multipart_upload/uploading_counter.dart';
 import 'package:aws_storage_service/src/aws_storage_service/aws_upload_service/upload_template.dart';
 import 'package:aws_storage_service/src/aws_storage_service/aws_upload_service/upload_utils/multipart_upload_config.dart';
-import 'package:http/http.dart';
 import 'package:rxdart/rxdart.dart';
 
 import '../../../aws_signer/aws_sigv4_signer.dart';
@@ -90,6 +89,14 @@ class MultipartFileUpload extends UploadTask {
 
     List<int> fileChunkIndex = _fileUploadController.getFileChunkIndex();
 
+    if (_fileUploadController.uploadPaused) {
+      //The upload has been paused.
+      //DO not upload another another chunk.
+      _uploadCompletedUpdate.add(false);
+
+      return;
+    }
+
     if (fileChunkIndex.isEmpty) {
       if (_uploadingNumberNotifier.numberOfActiveRequests != 0) return;
       //If the fileCHunkIndex is empty and there are no active requests,
@@ -124,6 +131,14 @@ class MultipartFileUpload extends UploadTask {
       if (!uploadCompleted) {}
       _uploadingNumberNotifier.oneUploadDone();
     });
+  }
+
+  Future pauseUpload() async {
+    ///This function would be used to pause an upload.
+    ///Basically, all the requests are stopped.
+    ///The error callback is triggered after the pauseUpload is called.
+
+    _fileUploadController.uploadPaused = true;
   }
 
   _calculateUploadProgress(int _) {
@@ -260,11 +275,13 @@ class MultipartFileUpload extends UploadTask {
       (value) async {
         _fileUploadController.fileLength = value;
         _fileUploadController.setChunkSize(); //Set the chunk size
+
+        //Assign the etaglists
+        _fileUploadController.addAllEtagLists(config.etagsLists);
+        _fileUploadController.getPartsThatHaveBeenUploaded();
         await _fileUploadController
             .createFileChunkIndexes(); //This is to get the indexes of the chunks
 
-        //Assign the etaglists
-        _fileUploadController.addAll(config.etagsLists);
         createMultipartUploadComplete.complete(true);
       },
       onError: (error) {
