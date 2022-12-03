@@ -1,0 +1,18 @@
+name: aws_storage_service
+description: A sample command-line application.
+version: 1.0.0
+# homepage: https://www.example.com
+environment:
+  sdk: '>=2.18.4 <3.0.0'
+
+dependencies:
+  dio: ^4.0.6
+  http: ^0.13.5
+  path: ^1.8.0
+  rxdart: ^0.27.7
+  state_notifier: ^0.7.0
+  xml: ^6.2.2
+
+dev_dependencies:
+  lints: ^2.0.0
+  test: ^1.16.0
