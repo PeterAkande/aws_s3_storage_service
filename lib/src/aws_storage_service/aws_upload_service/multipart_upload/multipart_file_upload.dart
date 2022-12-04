@@ -119,6 +119,7 @@ class MultipartFileUpload extends UploadTask {
       return;
     }
 
+    //Get the file chunk from the controller
     List<int> fileChunk = await _fileUploadController.getChunk(
       config.file,
       start: fileChunkIndex[1],
@@ -128,7 +129,16 @@ class MultipartFileUpload extends UploadTask {
     _uploadingNumberNotifier.oneUploadAdded();
 
     await _upload(fileChunk, fileChunkIndex[0]).then((uploadCompleted) {
-      if (!uploadCompleted) {}
+      if (!uploadCompleted) {
+        //The upload was not completed.
+        //Since the upload was not completed, add the file chunk index back to the file chunk index.
+
+        _fileUploadController.addFileChunkIndex(fileChunkIndex);
+        onError?.call(
+            'Error uploading file chunk of part number ${fileChunkIndex[0]}',
+            _fileUploadController.config.versionId,
+            _fileUploadController.etagsLists);
+      }
       _uploadingNumberNotifier.oneUploadDone();
     });
   }

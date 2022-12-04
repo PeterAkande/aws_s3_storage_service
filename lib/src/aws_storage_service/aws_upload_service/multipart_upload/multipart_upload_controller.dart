@@ -115,7 +115,7 @@ class MultipartFileUploadController {
         .future; //Just some dummy data to get rid of errors
   }
 
-  void addFileChunk(List<int> fileChunk) {
+  void addFileChunkIndex(List<int> fileChunk) {
     //This function is used to add a file chunk to the file chunk index.
     //It is called when an upload fails.
 

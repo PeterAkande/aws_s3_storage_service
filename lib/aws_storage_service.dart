@@ -1,5 +1,7 @@
 import 'dart:io';
 
+import 'package:aws_storage_service/src/aws_storage_service/aws_download_service/download_file_service.dart';
+import 'package:aws_storage_service/src/aws_storage_service/aws_download_service/download_file_utils/download_file_config.dart';
 import 'package:aws_storage_service/src/aws_storage_service/aws_upload_service/multipart_upload/multipart_file_upload.dart';
 import 'package:aws_storage_service/src/aws_storage_service/aws_upload_service/upload_file.dart';
 import 'package:aws_storage_service/src/aws_storage_service/aws_upload_service/upload_utils/multipart_upload_config.dart';
@@ -19,13 +21,81 @@ testFunctions() async {
   // await testFileUpload();
   // await testMultipartUpload();
 
-  await testResumeMultipartUpload();
+  // await testResumeMultipartUpload();
+
+  // await testDownload();
+
+  await testResumeDownload();
+}
+
+Future testResumeDownload() async {
+  String filePath = p.join(Directory.current.path, 'test_download.mp4');
+
+  String fileUrl = 'file/ftest.mp4';
+
+  DownloadFileConfig config = DownloadFileConfig(
+    url: fileUrl,
+    resumeDownload: true,
+    downloadPath: filePath,
+  );
+
+  DownloadFile downloadFile = DownloadFile(
+    config: config,
+    onRecieveProgress: ((totalDownloaded, totalSize) =>
+        print('Upload Status Callback ===> $totalDownloaded/$totalSize')),
+    errorCallback: (errorMessage) => print('An error occurred $errorMessage'),
+  );
+
+  bool prepSuccessful = await downloadFile.prepareDownload();
+  print(prepSuccessful);
+
+  downloadFile.downloadProgress.listen((event) {
+    print('Upload Status Stream ===> ${event[0]}/${event[1]}');
+  });
+
+  if (prepSuccessful) {
+    await downloadFile.download().then((value) {
+      downloadFile.dispose();
+    });
+  }
+}
+
+Future testDownload() async {
+  String filePath = p.join(Directory.current.path, 'test_download.mp4');
+
+  String fileUrl = 'file/ftest.mp4';
+
+  DownloadFileConfig config = DownloadFileConfig(
+    url: fileUrl,
+    downloadPath: filePath,
+  );
+
+  DownloadFile downloadFile = DownloadFile(
+    config: config,
+    onRecieveProgress: ((totalDownloaded, totalSize) =>
+        print('Upload Status Callback ===> $totalDownloaded/$totalSize')),
+    errorCallback: (errorMessage) => print('An error occurred $errorMessage'),
+  );
+
+  bool prepSuccessful = await downloadFile.prepareDownload();
+  print(prepSuccessful);
+
+  downloadFile.downloadProgress.listen((event) {
+    print('Upload Status Stream ===> ${event[0]}/${event[1]}');
+  });
+
+  if (prepSuccessful) {
+    await downloadFile.download().then((value) {
+      downloadFile.dispose();
+    });
+  }
 }
 
 Future testResumeMultipartUpload() async {
   String imageName = 'test.mp4';
   File file = File(p.join(Directory.current.path, 'test_files', imageName));
 
+  //Create the config object.
   MultipartUploadConfig config = MultipartUploadConfig(
     file: file,
     url: 'file/f$imageName',
@@ -129,7 +199,7 @@ Future testFileUpload() async {
   print(file.lengthSync());
 
   UploadTaskConfig config = UploadTaskConfig(
-      url: 'file/test_1_file.pdf',
+      url: 'file/web3.pdf',
       host: host,
       uploadType: UploadType.file,
       file: file);
