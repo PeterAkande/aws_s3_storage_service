@@ -13,7 +13,16 @@ class UploadTaskConfig {
     required this.uploadType,
     this.content,
     this.file,
-  });
+  }) {
+    if (uploadType == UploadType.file ||
+        uploadType == UploadType.multipartFIle) {
+      assert(file != null);
+    }
+
+    if (uploadType == UploadType.stringObject) {
+      assert(content != null);
+    }
+  }
 
   /*
    : assert(uploadType != UploadType.file && filePath == null,
