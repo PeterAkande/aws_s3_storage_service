@@ -1,15 +1,14 @@
 import 'dart:io';
 
-import 'package:aws_storage_service/src/aws_storage_service/aws_download_service/download_file_service.dart';
-import 'package:aws_storage_service/src/aws_storage_service/aws_download_service/download_file_utils/download_file_config.dart';
-import 'package:aws_storage_service/src/aws_storage_service/aws_upload_service/multipart_upload/multipart_file_upload.dart';
-import 'package:aws_storage_service/src/aws_storage_service/aws_upload_service/upload_file.dart';
-import 'package:aws_storage_service/src/aws_storage_service/aws_upload_service/upload_utils/multipart_upload_config.dart';
 import 'package:path/path.dart' as p;
 
 import 'package:aws_storage_service/src/aws_storage_service.dart';
-import 'package:aws_storage_service/src/aws_storage_service/aws_upload_service/upload_object.dart';
-import 'package:aws_storage_service/src/aws_storage_service/aws_upload_service/upload_utils/upload_object_config.dart';
+
+AwsCredentialsConfig credentialsConfig = AwsCredentialsConfig(
+    accessKey: 'AKIA2UKQKI4X3YPPGS47',
+    bucketName: 'testfrenbox',
+    region: 'us-west-2',
+    secretKey: '+747xEwqscv4y3UCrbDBSBHE9U9PC5q/VTPSnTfk');
 
 testFunctions() async {
   // await testFileUpload();
@@ -17,9 +16,9 @@ testFunctions() async {
 
   // await testResumeMultipartUpload();
 
-  // await testDownload();
+  await testDownload();
 
-  await testResumeDownload();
+  // await testResumeDownload();
 }
 
 Future testResumeDownload() async {
@@ -28,6 +27,7 @@ Future testResumeDownload() async {
   String fileUrl = 'file/ftest.mp4';
 
   DownloadFileConfig config = DownloadFileConfig(
+    credentailsConfig: credentialsConfig,
     url: fileUrl,
     resumeDownload: true,
     downloadPath: filePath,
@@ -60,6 +60,7 @@ Future testDownload() async {
   String fileUrl = 'file/ftest.mp4';
 
   DownloadFileConfig config = DownloadFileConfig(
+    credentailsConfig: credentialsConfig,
     url: fileUrl,
     downloadPath: filePath,
   );
@@ -91,9 +92,9 @@ Future testResumeMultipartUpload() async {
 
   //Create the config object.
   MultipartUploadConfig config = MultipartUploadConfig(
+    credentailsConfig: credentialsConfig,
     file: file,
     url: 'file/f$imageName',
-    host: host,
     resumeMultipart: true,
     versionId:
         'Zm9F2QhTuSZQHhnw1O8sThNk9fZ71lAUf20oTUQ11NrUaQy5DUwZ8oZ7fXuxCZywyY8mwUqsa54M3yg1S2QFIWGV.kv_QiMAxGlNHC55OAzBlDIusdJJ2jLF7qaQk9yg',
@@ -147,8 +148,11 @@ Future testMultipartUpload() async {
   String imageName = 'test.mp4';
   File file = File(p.join(Directory.current.path, 'test_files', imageName));
 
-  MultipartUploadConfig config =
-      MultipartUploadConfig(file: file, url: 'file/f$imageName', host: host);
+  MultipartUploadConfig config = MultipartUploadConfig(
+    file: file,
+    url: 'file/f$imageName',
+    credentailsConfig: credentialsConfig,
+  );
 
   MultipartFileUpload multipartFileUpload = MultipartFileUpload(
     config: config,
@@ -193,8 +197,8 @@ Future testFileUpload() async {
   print(file.lengthSync());
 
   UploadTaskConfig config = UploadTaskConfig(
+      credentailsConfig: credentialsConfig,
       url: 'file/web3.pdf',
-      host: host,
       uploadType: UploadType.file,
       file: file);
 
@@ -212,9 +216,10 @@ Future testFileUpload() async {
 
 Future testUploadObject() async {
   String url = r'testfile.text';
+
   UploadTaskConfig config = UploadTaskConfig(
+      credentailsConfig: credentialsConfig,
       url: url,
-      host: host,
       uploadType: UploadType.stringObject,
       content: 'Welcome to Amazon S3. agaian ana diwofofw ans');
 

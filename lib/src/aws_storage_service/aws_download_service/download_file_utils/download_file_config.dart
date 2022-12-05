@@ -1,3 +1,5 @@
+import 'package:aws_storage_service/aws_storage_service.dart';
+
 class DownloadFileConfig {
   //This would house the configurations for the download object
 
@@ -12,10 +14,12 @@ class DownloadFileConfig {
   //This specifies whether a download process is being resumed.
   //It is false if a new download process is needed.
   final bool resumeDownload;
+  AwsCredentialsConfig credentailsConfig;
 
   DownloadFileConfig(
       {required this.url,
       required this.downloadPath,
+      required this.credentailsConfig,
       this.versionId = '',
       this.resumeDownload = false});
 }

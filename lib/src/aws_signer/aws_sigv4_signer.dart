@@ -1,6 +1,4 @@
 import 'dart:convert';
-
-import '../aws_storage_service.dart';
 import 'utils.dart';
 
 //Make this client a singleton in the flutter code.
@@ -9,11 +7,13 @@ class AWSSigV4Signer {
   final String secretKey;
   final String accessKey;
   final String hostEndpoint;
+  final String region;
   Map<String, String> headers = {};
   String? bucketId;
 
   AWSSigV4Signer(
       {required this.accessKey,
+      required this.region,
       required this.hostEndpoint,
       required this.secretKey});
 

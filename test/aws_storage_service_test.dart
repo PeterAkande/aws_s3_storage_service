@@ -1,7 +1,8 @@
 import 'package:aws_storage_service/aws_storage_service.dart';
-import 'package:aws_storage_service/src/aws_storage_service/aws_upload_service/upload_file.dart';
-import 'package:aws_storage_service/src/aws_storage_service/aws_upload_service/upload_utils/upload_object_config.dart';
 import 'package:test/test.dart';
+
+AwsCredentialsConfig credentialsConfig = AwsCredentialsConfig(
+    accessKey: '', bucketName: '', region: '', secretKey: '');
 
 void main() {
   group(
@@ -12,7 +13,9 @@ void main() {
         () {
           expect(
               () => UploadTaskConfig(
-                  url: 'url', host: 'host', uploadType: UploadType.file),
+                  credentailsConfig: credentialsConfig,
+                  url: 'url',
+                  uploadType: UploadType.file),
               throwsA(isA<AssertionError>()));
         },
       );
@@ -22,7 +25,7 @@ void main() {
           expect(
               () => UploadTaskConfig(
                   url: 'url',
-                  host: 'host',
+                  credentailsConfig: credentialsConfig,
                   uploadType: UploadType.stringObject),
               throwsA(isA<AssertionError>()));
         },

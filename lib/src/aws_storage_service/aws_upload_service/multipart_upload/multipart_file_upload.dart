@@ -171,7 +171,10 @@ class MultipartFileUpload extends UploadTask {
     //Upload the chunk to the cloud.
 
     AWSSigV4Signer signer = AWSSigV4Signer(
-        accessKey: accessKey, secretKey: secretKey, hostEndpoint: host);
+        region: config.credentailsConfig.region,
+        accessKey: config.credentailsConfig.accessKey,
+        secretKey: config.credentailsConfig.secretKey,
+        hostEndpoint: config.credentailsConfig.host);
 
     final datetime = Utils.generateDatetime();
 
@@ -191,7 +194,8 @@ class MultipartFileUpload extends UploadTask {
     bool uploadSuccessful = await fileUploader(
         bytesPayload: fileByte,
         headers: headers,
-        url: Uri.https(host, config.url, queryParams).toString(),
+        url: Uri.https(config.credentailsConfig.host, config.url, queryParams)
+            .toString(),
         onSendComplete: (response) {
           //In the onsend complete, save the etag list and the part number
           //First get the etag.

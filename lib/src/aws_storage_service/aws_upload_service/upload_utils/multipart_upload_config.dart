@@ -1,11 +1,11 @@
 import 'dart:io';
 
+import '../../../../aws_storage_service.dart';
+
 class MultipartUploadConfig {
   //This would contain the configurations for the multipart uploads.
 
   String url; //The uri of the file in the bucket
-
-  String host;
 
   File file; //The file instance.
   bool resumeMultipart =
@@ -18,11 +18,12 @@ class MultipartUploadConfig {
   //This is the version id of the file that is to be uploaded. It would be empty for a new request.
   //It should not be empty for a resuming multipart request.
   String versionId;
+  AwsCredentialsConfig credentailsConfig;
 
   MultipartUploadConfig({
     required this.file,
     required this.url,
-    required this.host,
+    required this.credentailsConfig,
     this.versionId = '',
     this.etagsLists = const [],
     this.resumeMultipart = false,

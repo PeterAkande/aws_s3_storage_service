@@ -1,16 +1,18 @@
 import 'dart:io';
 
+import '../../../../aws_storage_service.dart';
+
 class UploadTaskConfig {
   String url;
-  String host;
   String? content;
   File? file;
   final UploadType uploadType;
+  AwsCredentialsConfig credentailsConfig;
 
   UploadTaskConfig({
     required this.url,
-    required this.host,
     required this.uploadType,
+    required this.credentailsConfig,
     this.content,
     this.file,
   }) {

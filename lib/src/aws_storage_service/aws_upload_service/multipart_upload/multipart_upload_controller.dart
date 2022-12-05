@@ -29,8 +29,7 @@ class MultipartFileUploadController {
   late final List<List<int>> _fileChunksIndexes;
 
   //This is the signer for all the requests that would be made to the AWS S3 service
-  final AWSSigV4Signer signer = AWSSigV4Signer(
-      accessKey: accessKey, hostEndpoint: host, secretKey: secretKey);
+  late final AWSSigV4Signer signer;
 
   //This cancel token would be used to cancel all requests if the pause upload function is called.
   CancelToken _cancelToken = CancelToken();
@@ -48,7 +47,19 @@ class MultipartFileUploadController {
 
   int get numberOfParts => _numberOfParts; //Expose a getter only
 
-  late final MultipartUploadConfig config;
+  //This would be set through the function
+  late final MultipartUploadConfig _config;
+
+  set config(MultipartUploadConfig config) {
+    _config = config;
+    signer = AWSSigV4Signer(
+        region: config.credentailsConfig.region,
+        accessKey: _config.credentailsConfig.accessKey,
+        hostEndpoint: _config.credentailsConfig.host,
+        secretKey: _config.credentailsConfig.secretKey);
+  }
+
+  MultipartUploadConfig get config => _config;
 
   //This list would hold the list of uploaded Etags.
   //The etag is a List [partNUmber, versionId]
@@ -78,8 +89,6 @@ class MultipartFileUploadController {
       //Each etag list is of form [partNumber, versionId]
       alreadyUploadedParts.add(eTagList[0]);
     }
-
-    print(alreadyUploadedParts);
   }
 
   // List<List<dynamic>> get eTagLists => _etagsLists;
@@ -142,7 +151,8 @@ class MultipartFileUploadController {
 
     final dateTime = Utils.generateDatetime();
 
-    final uri = Uri.https(config.host, config.url, {'uploads': ''});
+    final uri =
+        Uri.https(config.credentailsConfig.host, config.url, {'uploads': ''});
     final authHeader = signer.buildAuthorizationHeader(
       'POST',
       '/${config.url}',
@@ -156,14 +166,11 @@ class MultipartFileUploadController {
     try {
       var response = await http.post(uri, headers: headers);
       if (response.statusCode == 200) {
-        print(response.body);
         var xmlObj = XmlDocument.parse(response.body);
 
         String versionId = xmlObj.findAllElements('UploadId').single.text;
         return Future.value(versionId);
       } else {
-        print(response.body);
-        print(response.reasonPhrase);
         return Future.error('Error Creating Multipart Request');
       }
     } on SocketException {
@@ -207,10 +214,8 @@ class MultipartFileUploadController {
         requestPayload: basicRequestTemplateBuffer.toString(),
         unSignedPayload: true);
 
-    print(basicRequestTemplateBuffer);
-    print(etagsLists);
-
-    final uri = Uri.https(host, config.url, {'uploadId': config.versionId});
+    final uri = Uri.https(config.credentailsConfig.host, config.url,
+        {'uploadId': config.versionId});
 
     var headers = signer.headers;
     headers['Authorization'] = authHeader;
@@ -219,9 +224,9 @@ class MultipartFileUploadController {
           headers: headers, body: basicRequestTemplateBuffer.toString());
 
       if (response.statusCode == 200) {
-        print(
-          response.headers['x-amz-version-id'] as String,
-        );
+        // print(
+        //   response.headers['x-amz-version-id'] as String,
+        // );
         onUploadComplete?.call(
           etagsLists,
           response.headers['x-amz-version-id'] as String,
@@ -229,9 +234,9 @@ class MultipartFileUploadController {
 
         requestCompletedSuccessfully.complete(true);
       } else {
-        print(response.statusCode);
-        print(response.body);
-        print(response.reasonPhrase);
+        // print(response.statusCode);
+        // print(response.body);
+        // print(response.reasonPhrase);
         requestCompletedSuccessfully.complete(false);
       }
     } catch (e) {

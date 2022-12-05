@@ -4,7 +4,6 @@ import 'package:aws_storage_service/src/aws_signer/aws_sigv4_signer.dart';
 import 'package:aws_storage_service/src/aws_signer/utils.dart';
 import 'package:aws_storage_service/src/aws_storage_service/aws_upload_service/upload_template.dart';
 import 'package:aws_storage_service/src/aws_storage_service/aws_upload_service/upload_utils/upload_function.dart';
-import 'package:aws_storage_service/src/aws_storage_service/utils/constants.dart';
 import 'package:rxdart/rxdart.dart';
 
 import 'upload_utils/upload_object_config.dart';
@@ -34,7 +33,10 @@ class UploadFile extends UploadTask {
     //The file path is contained in the UploadTask config.
 
     AWSSigV4Signer client = AWSSigV4Signer(
-        accessKey: accessKey, secretKey: secretKey, hostEndpoint: host);
+        region: config.credentailsConfig.region,
+        accessKey: config.credentailsConfig.accessKey,
+        secretKey: config.credentailsConfig.secretKey,
+        hostEndpoint: config.credentailsConfig.host);
 
     File file = config.file!;
 
@@ -58,7 +60,7 @@ class UploadFile extends UploadTask {
         },
         bytesPayload: fileByte,
         headers: header,
-        url: 'https://${config.host}/${config.url}');
+        url: 'https://${config.credentailsConfig.host}/${config.url}');
 
     return uploadSuccessful;
   }

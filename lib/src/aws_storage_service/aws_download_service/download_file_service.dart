@@ -7,7 +7,6 @@ import 'package:dio/dio.dart';
 import 'package:rxdart/rxdart.dart';
 
 import '../../aws_signer/utils.dart';
-import '../utils/constants.dart';
 import 'download_file_utils/dio_download_manager.dart';
 
 class DownloadFile {
@@ -43,7 +42,10 @@ class DownloadFile {
     final Completer<bool> preparationCompleter = Completer();
 
     AWSSigV4Signer signer = AWSSigV4Signer(
-        accessKey: accessKey, secretKey: secretKey, hostEndpoint: host);
+        region: config.credentailsConfig.region,
+        accessKey: config.credentailsConfig.accessKey,
+        secretKey: config.credentailsConfig.secretKey,
+        hostEndpoint: config.credentailsConfig.host);
 
     final authorizationHeader = signer.buildAuthorizationHeader(
         'GET', '/${config.url}', {}, Utils.trimString(datetime),
@@ -79,7 +81,8 @@ class DownloadFile {
 
     final Completer<bool> downloadCompleter = Completer();
 
-    String uploadUrl = 'https://$host/${Uri.encodeComponent(config.url)}';
+    String uploadUrl =
+        'https://${config.credentailsConfig.host}/${Uri.encodeComponent(config.url)}';
 
     Options options = Options(headers: _header);
 
