@@ -11,7 +11,7 @@ dependencies:
   path: ^1.8.0
   rxdart: ^0.27.7
   state_notifier: ^0.7.0
-  xml: ^6.2.2
+  flutter_svg: ^1.1.6
 
 dev_dependencies:
   lints: ^2.0.0
