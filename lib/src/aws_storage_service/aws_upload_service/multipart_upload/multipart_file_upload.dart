@@ -27,7 +27,8 @@ class MultipartFileUpload extends UploadTask {
 
   // a function that would be called when an error is encountered
   //It returns the error, the version id of the file and the etagList that has been uploaded sofar
-  final Function(String error, String versionId, List etagList)? onError;
+  final Function(String error, String versionId, List<List<dynamic>> etagList)?
+      onError;
 
   final MultipartFileUploadController _fileUploadController =
       MultipartFileUploadController();
@@ -205,10 +206,10 @@ class MultipartFileUpload extends UploadTask {
           print('This is the status code ${response.statusCode}\n');
 
           print('This is the response body${response.body}\n');
-          print('This is the header${response.headers}\n');
+          print('This is the header${response._headers}\n');
           print('This the reason phrase ${response.reasonPhrase}\n');
 
-          String etag = response.headers['etag'];
+          String etag = response._headers['etag'];
           _fileUploadController.addEtag([partNumber, etag]);
 
           onPartUploadComplete?.call(_fileUploadController.etagsLists,
