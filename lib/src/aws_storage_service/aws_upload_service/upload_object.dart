@@ -19,7 +19,9 @@ class UploadObject extends UploadTask {
   @override
   Stream<List<int>> get uploadProgress => _uploadProgress.asBroadcastStream();
 
-  UploadObject({required this.config});
+  final Function(dynamic response)? onUploadComplete;
+
+  UploadObject({required this.config, this.onUploadComplete});
 
   @override
   Future<bool> upload() async {
@@ -63,6 +65,7 @@ class UploadObject extends UploadTask {
       },
     ).then(
       (value) {
+        onUploadComplete?.call(value);
         uploadCompleter.complete(true);
       },
       onError: (error) {

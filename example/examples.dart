@@ -11,12 +11,12 @@ AwsCredentialsConfig credentialsConfig = AwsCredentialsConfig(
     secretKey: '+747xEwqscv4y3UCrbDBSBHE9U9PC5q/VTPSnTfk');
 
 testFunctions() async {
-  // await testFileUpload();
+  await testFileUpload();
   // await testMultipartUpload();
 
   // await testResumeMultipartUpload();
 
-  await testDownload();
+  // await testDownload();
 
   // await testResumeDownload();
 }
@@ -198,7 +198,7 @@ Future testFileUpload() async {
 
   UploadTaskConfig config = UploadTaskConfig(
       credentailsConfig: credentialsConfig,
-      url: 'file/web3.pdf',
+      url: 'file/web23.pdf',
       uploadType: UploadType.file,
       file: file);
 

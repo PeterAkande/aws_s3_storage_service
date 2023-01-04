@@ -20,8 +20,9 @@ class UploadFile extends UploadTask {
 
   @override
   Stream<List<int>> get uploadProgress => _uploadProgress.asBroadcastStream();
+  final Function(dynamic response)? onSendComplete;
 
-  UploadFile({required this.config})
+  UploadFile({required this.config, this.onSendComplete})
       : assert(config.file != null,
             'Please assign the value of file in the UploadTask Config'),
         assert(config.uploadType == UploadType.file,
@@ -59,6 +60,7 @@ class UploadFile extends UploadTask {
           _uploadProgress.add([count, total]);
         },
         bytesPayload: fileByte,
+        onSendComplete: onSendComplete,
         headers: header,
         url: 'https://${config.credentailsConfig.host}/${config.url}');
 
