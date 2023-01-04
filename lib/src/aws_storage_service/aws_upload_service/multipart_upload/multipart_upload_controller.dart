@@ -1,15 +1,17 @@
 import 'dart:async';
 import 'dart:io';
+import 'dart:isolate';
 
 import 'package:aws_storage_service/src/aws_signer/aws_sigv4_signer.dart';
 import 'package:aws_storage_service/src/aws_storage_service/aws_upload_service/upload_utils/create_chunk_size_config.dart';
 import 'package:aws_storage_service/src/aws_storage_service/aws_upload_service/upload_utils/multipart_upload_config.dart';
 import 'package:dio/dio.dart';
-import 'package:xml/xml.dart';
 import 'package:http/http.dart' as http;
+import 'package:xml/xml.dart';
 
 import '../../../aws_signer/utils.dart';
 import '../../../aws_storage_service.dart';
+import 'isolate_message_config.dart';
 
 class MultipartFileUploadController {
   //This class would contain the various details about a multipart upload like the chunk indexes,
@@ -266,12 +268,19 @@ class MultipartFileUploadController {
 
     //TODO: Use the compute function in a flutter app.
 
-    // await Isolate.spawn(createChunkIndexes, createChunkSizesIndexesParameterModel)
+    // await compute(createChunkIndexes, createChunkSizesIndexesParameterModel)
     //     .then((value) {
     //   fileChunksIndexes.addAll(value.); // Add all to the file chunkIndexes
     // });
 
-    _fileChunksIndexes = createChunkIndexes(createChunkSizesIndexesConfig);
+    final receivePort = ReceivePort();
+
+    IsolateMessage isolateMessage =
+        IsolateMessage(createChunkSizesIndexesConfig, receivePort.sendPort);
+
+    await Isolate.spawn(createChunkIndexes, isolateMessage);
+
+    _fileChunksIndexes = await receivePort.first as List<List<int>>;
 
     _numberOfParts = _fileChunksIndexes.length;
 
@@ -300,7 +309,7 @@ class MultipartFileUploadController {
   }
 }
 
-List<List<int>> createChunkIndexes(CreateChunkSizesIndexesConfig parameters) {
+Future<void> createChunkIndexes(IsolateMessage message) {
   //This would be run in an isolate because for larger files,
   // this for loop seems to block the main UI thread (For flutter apps)
 
@@ -308,23 +317,23 @@ List<List<int>> createChunkIndexes(CreateChunkSizesIndexesConfig parameters) {
   //More details about the file chunk indexes is in the definition.
 
   final List<List<int>> fileChunksIndexes = [];
-  for (int i = 0; i < parameters.numberOfChunks + 1; i++) {
-    if (parameters.alreadyUploadParts.contains(i + 1)) {
+  for (int i = 0; i < message.config.numberOfChunks + 1; i++) {
+    if (message.config.alreadyUploadParts.contains(i + 1)) {
       //The part has been uploaded before. Skip to the next one
       continue;
     }
 
-    if (i == parameters.numberOfChunks) {
+    if (i == message.config.numberOfChunks) {
       //This is the last chunk to be uploaded.
-      fileChunksIndexes.add([i + 1, parameters.chunkSize * i]);
+      fileChunksIndexes.add([i + 1, message.config.chunkSize * i]);
     } else {
       fileChunksIndexes.add([
         i + 1,
-        parameters.chunkSize * i,
-        parameters.chunkSize * i + parameters.chunkSize
+        message.config.chunkSize * i,
+        message.config.chunkSize * i + message.config.chunkSize
       ]);
     }
   }
 
-  return fileChunksIndexes;
+  Isolate.exit(message.sendPort, fileChunksIndexes);
 }
