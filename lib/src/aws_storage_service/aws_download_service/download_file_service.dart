@@ -9,6 +9,7 @@ import 'package:rxdart/rxdart.dart';
 import '../../aws_signer/utils.dart';
 import 'download_file_utils/dio_download_manager.dart';
 
+///[DownloadFile] handles the downlood process
 class DownloadFile {
   //This class would be incharge of downloading a file.
   //It would:
@@ -16,17 +17,23 @@ class DownloadFile {
   //2.) Have an error callback function.
   //3.) Have the resume download support.
 
+  ///The [DownloadFileConfig]. It contains settings that governs the download process
   final DownloadFileConfig config;
   late Map<String, String> _header;
 
-  //The cancel token would be useful for pausing uploads.
+  ///Cancel token used to cancel downloads. Type [CancelToken]
   CancelToken _cancelToken = CancelToken();
 
+  ///Stream to give the download progress of the file
+  ///
+  ///Gives the latest progress when a new listener is attached
   final BehaviorSubject<List<int>> _downloadProgress =
       BehaviorSubject.seeded([0, 0]);
 
-  //This would be the function that would be called as the upload is going on.
+  ///callback to notify the current upload progress. Similar to [_downloadProgress]
   final Function(int totalDownloaded, int totalSize)? onRecieveProgress;
+
+  ///Callback when an error occures
   final Function(String errorMessage)? errorCallback;
 
   DownloadFile(
@@ -35,9 +42,8 @@ class DownloadFile {
   Stream<List<int>> get downloadProgress =>
       _downloadProgress.asBroadcastStream();
 
+  ///[prepareDownload] initialize the needed parameters that are needed for the download operation
   Future<bool> prepareDownload() async {
-    //This function would initialize the needed parameters that are needed for the download operation
-    //If the preparation is successful, return true and false if it is otherwise
     String datetime = Utils.generateDatetime();
     final Completer<bool> preparationCompleter = Completer();
 
@@ -45,7 +51,8 @@ class DownloadFile {
         region: config.credentailsConfig.region,
         accessKey: config.credentailsConfig.accessKey,
         secretKey: config.credentailsConfig.secretKey,
-        hostEndpoint: config.credentailsConfig.host);
+        hostEndpoint: config.credentailsConfig
+            .host); // Create the AWS Signer to be used to sign the AWS Request
 
     final authorizationHeader = signer.buildAuthorizationHeader(
         'GET', '/${config.url}', {}, Utils.trimString(datetime),
@@ -61,6 +68,12 @@ class DownloadFile {
         errorCallback?.call(
             'File to be resumed does not exist. Please set resume download to false to download a new file');
 
+        if (config.continueDownloadIfFileDoesNotExist) {
+          config.resumeDownload = false;
+          preparationCompleter.complete(true);
+          return true;
+        }
+
         preparationCompleter.complete(false);
       } else {
         // print('The range is ${'bytes=${fileTobeResumed.lengthSync()}-'}');
@@ -74,11 +87,8 @@ class DownloadFile {
     return preparationCompleter.future;
   }
 
+  ///[download] starts the download process. It starts to download the file
   Future<bool> download() async {
-    //This function would be incharge of downloading a file.
-    //If an error occurs, it returns false.
-    //If the download was successful, it returns true.
-
     final Completer<bool> downloadCompleter = Completer();
 
     String uploadUrl =
@@ -129,6 +139,7 @@ class DownloadFile {
     return downloadCompleter.future;
   }
 
+  ///Pauses the download
   void pauseDownload() {
     _cancelToken.cancel();
 

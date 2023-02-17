@@ -1,25 +1,29 @@
 import 'package:aws_storage_service/aws_storage_service.dart';
 
+///Configuration for all download actions or Process
 class DownloadFileConfig {
-  //This would house the configurations for the download object
+  ///The path of the file in the bucket.
+  final String url;
 
-  final String url; //The path of the file in the bucket.
+  //The path the file should be downloaded in on the device.
+  final String downloadPath;
 
-  final String downloadPath; //The path the file should be downloaded at.
-
-  //The specific version id to be downloaded.
-  //If it is needed to download a specific version.
+  ///The specific version id to be downloaded.
   final String versionId;
 
-  //This specifies whether a download process is being resumed.
-  //It is false if a new download process is needed.
-  final bool resumeDownload;
+  ///This specifies if the download should be resumed
+  bool resumeDownload;
+
+  ///The credentials for the Aws client.It is of type [AwsCredentialsConfig]
   AwsCredentialsConfig credentailsConfig;
+
+  final bool continueDownloadIfFileDoesNotExist;
 
   DownloadFileConfig(
       {required this.url,
       required this.downloadPath,
       required this.credentailsConfig,
       this.versionId = '',
+      this.continueDownloadIfFileDoesNotExist = true,
       this.resumeDownload = false});
 }

@@ -2,10 +2,15 @@ import 'dart:io';
 
 import '../../../../aws_storage_service.dart';
 
+///Defines the information to be used in the [UploadFile] and [UploadObject] processes
 class UploadTaskConfig {
   String url;
+
+  ///String of the content of the object to be uploaded. Only valid for [UploadObject]
   String? content;
   File? file;
+
+  ///The [UploadType]
   final UploadType uploadType;
   AwsCredentialsConfig credentailsConfig;
 
@@ -25,12 +30,7 @@ class UploadTaskConfig {
       assert(content != null);
     }
   }
-
-  /*
-   : assert(uploadType != UploadType.file && filePath == null,
-            'Do not pass filePath if upload type is not of file or multipart file'),
-        assert(uploadType == UploadType.stringObject && content != null)
-  */
 }
 
+///Defines the type of file bring uploaded
 enum UploadType { multipartFIle, stringObject, file }

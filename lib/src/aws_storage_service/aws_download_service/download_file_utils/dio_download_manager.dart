@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:dio/native_imp.dart';
 import 'package:dio/dio.dart';
 
+///[DioDownloadManager] creates room for resumed downloads
 class DioDownloadManager extends DioForNative {
   /*
   This would be the manager in change of downloading files.

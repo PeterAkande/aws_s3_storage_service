@@ -5,32 +5,39 @@ import 'package:path/path.dart' as p;
 import 'package:aws_storage_service/src/aws_storage_service.dart';
 
 AwsCredentialsConfig credentialsConfig = AwsCredentialsConfig(
-    accessKey: 'AKIA2UKQKI4X3YPPGS47',
-    bucketName: 'testfrenbox',
-    region: 'us-west-2',
-    secretKey: '+747xEwqscv4y3UCrbDBSBHE9U9PC5q/VTPSnTfk');
+  accessKey:
+      'AKIA2UKQKI4X3YPPGS47', // This is a test accessKey, It is invallid here
+  bucketName: 'testbucket', // The bucket name
+  region: 'us-west-2', // The region of your Aws bucket allocation
+  secretKey: '+747xEwqscv4y3UCrbDBSBHE9U9PC5q/VTPSnTfk', // Your secret Key
+);
 
 testFunctions() async {
-  await testFileUpload();
-  // await testMultipartUpload();
+  await testFileUpload(); // This tests the file upload
 
-  // await testResumeMultipartUpload();
+  await testMultipartUpload(); // Test mulltipart upload
 
-  // await testDownload();
+  await testResumeMultipartUpload(); //  Test resuming multipart upload
 
-  // await testResumeDownload();
+  await testDownload(); // Test download
+
+  await testResumeDownload(); // Test resume download
 }
 
 Future testResumeDownload() async {
+  //This tests uploading of a file
   String filePath = p.join(Directory.current.path, 'test_download.mp4');
 
-  String fileUrl = 'file/ftest.mp4';
+  String fileUrl = 'file/ftest.mp4'; // The Url of the file in the bucket
 
+  //Create a download config...
+  //The download config contains all the configurations needed by the downloader to download the file
   DownloadFileConfig config = DownloadFileConfig(
     credentailsConfig: credentialsConfig,
     url: fileUrl,
-    resumeDownload: true,
-    downloadPath: filePath,
+    resumeDownload:
+        true, // Set resume download to true if download is to be resumed
+    downloadPath: filePath, // The file path of the file to be resumed
   );
 
   DownloadFile downloadFile = DownloadFile(
@@ -38,12 +45,14 @@ Future testResumeDownload() async {
     onRecieveProgress: ((totalDownloaded, totalSize) =>
         print('Upload Status Callback ===> $totalDownloaded/$totalSize')),
     errorCallback: (errorMessage) => print('An error occurred $errorMessage'),
-  );
+  ); // Create  a download file instance
 
-  bool prepSuccessful = await downloadFile.prepareDownload();
-  print(prepSuccessful);
+  bool prepSuccessful =
+      await downloadFile.prepareDownload(); // Prepate the download
+  print('The download was prepared Successfully $prepSuccessful');
 
   downloadFile.downloadProgress.listen((event) {
+    //You can listen to the download progress
     print('Upload Status Stream ===> ${event[0]}/${event[1]}');
   });
 
@@ -55,9 +64,10 @@ Future testResumeDownload() async {
 }
 
 Future testDownload() async {
+  //Initiate a new upload
   String filePath = p.join(Directory.current.path, 'test_download.mp4');
 
-  String fileUrl = 'file/ftest.mp4';
+  String fileUrl = 'file/ftest.mp4'; //The file URl in the bucket
 
   DownloadFileConfig config = DownloadFileConfig(
     credentailsConfig: credentialsConfig,
@@ -73,7 +83,7 @@ Future testDownload() async {
   );
 
   bool prepSuccessful = await downloadFile.prepareDownload();
-  print(prepSuccessful);
+  print('The download was prepared Successfully $prepSuccessful');
 
   downloadFile.downloadProgress.listen((event) {
     print('Upload Status Stream ===> ${event[0]}/${event[1]}');
@@ -87,8 +97,22 @@ Future testDownload() async {
 }
 
 Future testResumeMultipartUpload() async {
-  String imageName = 'test.mp4';
+  String imageName = 'test.mp4'; //tHE Name of the file to be uploaded
   File file = File(p.join(Directory.current.path, 'test_files', imageName));
+
+  //EtagLists is a list of the etags that have been uploaded.
+  //For every chunk uploaded to aws, an Etag id is returned.
+  //The package has a method that returns all the uploaded etag lists everytime a chunk upload was successful
+  final eTagLists = [
+    [2, "1ee28a7ac06786aff26d47298674c847"],
+    [1, "18cc73a82389202aa085ee5751666726"],
+    [4, "bf41ee73393dbfa1a5327fbb50aff054"],
+    [5, "2848ec759573e3c5f6cadf1145e9efd9"]
+  ];
+
+  //The version id of the upload id is the unique id given to this upload when the upload was started
+  final versionIdOrUploadId =
+      'Zm9F2QhTuSZQHhnw1O8sThNk9fZ71lAUf20oTUQ11NrUaQy5DUwZ8oZ7fXuxCZywyY8mwUqsa54M3yg1S2QFIWGV.kv_QiMAxGlNHC55OAzBlDIusdJJ2jLF7qaQk9yg';
 
   //Create the config object.
   MultipartUploadConfig config = MultipartUploadConfig(
@@ -96,14 +120,8 @@ Future testResumeMultipartUpload() async {
     file: file,
     url: 'file/f$imageName',
     resumeMultipart: true,
-    versionId:
-        'Zm9F2QhTuSZQHhnw1O8sThNk9fZ71lAUf20oTUQ11NrUaQy5DUwZ8oZ7fXuxCZywyY8mwUqsa54M3yg1S2QFIWGV.kv_QiMAxGlNHC55OAzBlDIusdJJ2jLF7qaQk9yg',
-    etagsLists: [
-      [2, "1ee28a7ac06786aff26d47298674c847"],
-      [1, "18cc73a82389202aa085ee5751666726"],
-      [4, "bf41ee73393dbfa1a5327fbb50aff054"],
-      [5, "2848ec759573e3c5f6cadf1145e9efd9"]
-    ],
+    versionId: versionIdOrUploadId,
+    etagsLists: eTagLists,
   );
 
   MultipartFileUpload multipartFileUpload = MultipartFileUpload(

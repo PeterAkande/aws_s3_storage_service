@@ -5,7 +5,7 @@ import 'package:http/http.dart' as http;
 
 Future<bool> fileUploader(
     {Function(int, int)? onSendProgress,
-    Function(dynamic)? onSendComplete,
+    Function(dynamic, String versionId)? onSendComplete,
     required List<int> bytesPayload,
     required Map<String, String> headers,
     required String url}) async {
@@ -29,34 +29,30 @@ Future<bool> fileUploader(
 
   Completer<bool> uploadCompleter = Completer();
 
-  print(bytesPayload.length);
-
   //////////////////////////////////////////////
-  try {
-    var resp = await http
-        .put(
-      Uri.parse(url),
-      body: bytesPayload,
-      headers: headers,
-    )
-        .then(
-      (value) {
-        if (value.statusCode == 200) {
-          onSendComplete?.call(value);
-          uploadCompleter.complete(true);
-        } else {
-          uploadCompleter.complete(false);
-        }
-      },
-      onError: (error) {
-        //An error occurred. Return it that the opetation was not successul
+  // try {
+  var resp = await http
+      .put(
+    Uri.parse(url),
+    body: bytesPayload,
+    headers: headers,
+  )
+      .then(
+    (value) {
+      if (value.statusCode == 200) {
+        onSendComplete?.call(value, value.headers['x-amz-version-id'] ?? '');
+        uploadCompleter.complete(true);
+      } else {
+        print(value.body);
         uploadCompleter.complete(false);
-      },
-    );
-  } catch (e) {
-    //An error occurred, then return it that the upload was not successful
-    uploadCompleter.complete(false);
-  }
+      }
+    },
+    onError: (error) {
+      print(error);
+      //An error occurred. Return it that the opetation was not successul
+      uploadCompleter.complete(false);
+    },
+  );
 
   // var request = MultipartRequest(
   //   'PUT',

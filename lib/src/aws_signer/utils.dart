@@ -3,7 +3,10 @@ import 'dart:convert';
 import 'package:crypto/crypto.dart';
 import 'package:convert/convert.dart';
 
+///The aws Servive
 const String service = 's3';
+
+//The hasing algorithm used in requests
 const String algorithm = 'AWS4-HMAC-SHA256';
 
 class Utils {
@@ -41,8 +44,6 @@ class Utils {
   static String generateDatetime() {
     //generate the datetime
 
-    // return '20130524T000000Z';
-
     return DateTime.now()
         .toUtc()
         .toString()
@@ -62,12 +63,6 @@ class Utils {
         ),
       ),
     );
-
-    // return sha256Hash(
-    //   utf8.encode(
-    //     trimString(payload),
-    //   ),
-    // );
   }
 
   hextoBin(String value) {
@@ -78,30 +73,5 @@ class Utils {
     return convertToHex(
       sha256Hash(bytesPayload as List<int>),
     );
-
-    // return sha256Hash(bytesPayload as List<int>);
   }
-}
-
-class Signature {
-  final String signature;
-  final String credentialScope;
-  final String datetime;
-  final String httpMethod;
-  final String policy;
-
-  Signature(this.credentialScope, this.datetime, this.httpMethod,
-      this.signature, this.policy);
-}
-
-class HeaderElements {
-  static const _awsSha256 = 'AWS4-HMAC-SHA256';
-  static const _aws4request = 'aws4_request';
-  static const _aws4 = 'AWS4';
-  static const _xAmzDate = 'x-amz-date';
-  static const _xAmzSecurityToken = 'x-amz-security-token';
-  static const _host = 'host';
-  static const _authorization = 'Authorization';
-  static const _defaultContentType = 'application/json';
-  static const _defaultAcceptType = 'application/json';
 }

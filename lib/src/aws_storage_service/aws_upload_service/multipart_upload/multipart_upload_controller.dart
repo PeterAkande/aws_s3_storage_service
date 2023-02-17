@@ -255,6 +255,9 @@ class MultipartFileUploadController {
     _cancelToken = CancelToken(); // reassign the Token
   }
 
+  ///[createFileChunkIndexes] calculate the range to which the file would divided into
+  ///
+  ///It calculated the chunk indexes in an [Isolate] so that the main UI thread for flutter apps is not blocked
   Future createFileChunkIndexes() async {
     //This function creates a list of the starting and ending indexes of the bytes of the data to be read at a time depending on tjhe defined chunk size
     final int numberOfChunks = fileLength ~/ chunkSize;
@@ -265,13 +268,6 @@ class MultipartFileUploadController {
       chunkSize: chunkSize,
       alreadyUploadParts: alreadyUploadedParts,
     );
-
-    //TODO: Use the compute function in a flutter app.
-
-    // await compute(createChunkIndexes, createChunkSizesIndexesParameterModel)
-    //     .then((value) {
-    //   fileChunksIndexes.addAll(value.); // Add all to the file chunkIndexes
-    // });
 
     final receivePort = ReceivePort();
 
@@ -287,6 +283,7 @@ class MultipartFileUploadController {
     return _fileChunksIndexes; //Return the file chunk indexes since this would be run in an isolate
   }
 
+  ///Calculated the chunkSIze depending on the size of the file being uploaded
   setChunkSize() {
     //This function is used to set the chunk size. The chunk size is dependent on the size
     //Of the file. For larger files, the chunk size is larger

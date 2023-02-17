@@ -8,19 +8,22 @@ import 'package:rxdart/rxdart.dart';
 
 import 'upload_utils/upload_object_config.dart';
 
+///[UploadFile] handles the uploading of a [File] of less than 5mb. Greater than 5mb should use [MultipartFileUpload]
 class UploadFile extends UploadTask {
-  ///This class is for files that are lesser than 6 mb
-  ///If the upload is successful, true is returned
-  ///
   final UploadTaskConfig config;
 
-  //BehaviourSubject is used so that the latest value broadcasted to any new subscriber
+  ///[_uploadProgress] exposes a stream that gives the upload progress for the file being uploaded
+  ///
+  ///[BehaviourSubject] is used so that the latest value broadcasted to any new subscriber
   final BehaviorSubject<List<int>> _uploadProgress =
       BehaviorSubject.seeded([0, 0]);
 
+  ///[uploadProgess] exposes a stream that gives the upload progress for the file being uploaded
   @override
   Stream<List<int>> get uploadProgress => _uploadProgress.asBroadcastStream();
-  final Function(dynamic response)? onSendComplete;
+
+  ///[onSendComplete] is called when the file has been uploaded completely
+  final Function(dynamic response, String versionId)? onSendComplete;
 
   UploadFile({required this.config, this.onSendComplete})
       : assert(config.file != null,
@@ -42,8 +45,6 @@ class UploadFile extends UploadTask {
     File file = config.file!;
 
     List<int> fileByte = await file.readAsBytes();
-
-    print(fileByte.length);
 
     final datetime = Utils.generateDatetime();
 

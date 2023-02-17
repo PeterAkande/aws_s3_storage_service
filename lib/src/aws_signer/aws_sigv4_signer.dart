@@ -1,15 +1,20 @@
 import 'dart:convert';
 import 'utils.dart';
 
-//Make this client a singleton in the flutter code.
+/// Signer For All Aws Requests
 class AWSSigV4Signer {
-  //The kind of request targeted here is the path styled requests
+  ///[secretKey] is gotten from the Aws Console
   final String secretKey;
+
+  ///[accessKey] is gotten from the AWSconsole
   final String accessKey;
+
+  ///[hostEndpoint] is the url of the bucket. e.g testbucket.s3.amazonaws.com
   final String hostEndpoint;
+
+  ///[region] is the region where the bucket is created in
   final String region;
   Map<String, String> headers = {};
-  String? bucketId;
 
   AWSSigV4Signer(
       {required this.accessKey,
@@ -17,39 +22,19 @@ class AWSSigV4Signer {
       required this.hostEndpoint,
       required this.secretKey});
 
-  Signature buildSignatureObject(
-    String httpMethod,
-    String uri,
-    Map<String, String> queryParams,
-    String datetime,
-  ) {
-    //Build the signature according to the amazon S4 signature;
-    /*Check out 
-    https://docs.aws.amazon.com/AmazonS3/latest/API/sigv4-authentication-HTTPPOST.html for the more understanding of
-    This function and the functions called here.*/
-
-    final credentialScope =
-        '$accessKey/${datetime.substring(0, 8)}/$region/s3/aws4_request'; //datetime.substring(0,8) is used because only the date is needed.
-    final signingKey = buildSigningKey(datetime);
-
-    final String policy = buildPolicy(datetime, credentialScope);
-    final String stringToSign = buildEncodedPolicy(policy);
-
-    final String signature = buildSignature(signingKey, stringToSign);
-
-    return Signature(signature, credentialScope, datetime, httpMethod, policy);
-  }
-
+  ///Builds The Whole Authorzation Header of the request using Amazon SigV4
+  ///
+  ///Check [here](https://docs.aws.amazon.com/AmazonS3/latest/API/sig-v4-header-based-auth.html#canonical-request) for more info
+  ///[httpMethod] is the method of request. Either PUT or POST or GET
+  ///[uri] is the path of the file or resource in aws
+  ///[datetime] is an Iso8601([DateTime.now().toIso8601String()]) String of [DateTime]
+  ///[unsignedPayload] is true for uploads, if the payload is to be unsigned
+  ///[bytesPayload] is a [List] of bytes to be hashed and attached to the payload if [unsignedPayload] is false
   String buildAuthorizationHeader(String httpMethod, String uri,
       Map<String, String> queryParams, String datetime,
       {String requestPayload = '',
       List<int>? bytesPayload,
       bool unSignedPayload = false}) {
-    //Build the authorization according to the amazon S4 signature;
-
-    /*Check out 
-    https://docs.aws.amazon.com/AmazonS3/latest/API/sig-v4-header-based-auth.html#canonical-request for the more understanding of
-    This function and the function called here.*/
     String hashedPayload = '';
     if (!unSignedPayload) {
       if (bytesPayload != null) {
@@ -61,15 +46,11 @@ class AWSSigV4Signer {
       hashedPayload = 'UNSIGNED-PAYLOAD';
     }
 
-    // hashedPayload = 'UNSIGNED-PAYLOAD';
-
     Map<String, String> headers = constructHeader(datetime, hashedPayload);
     String signedHeaders = buildSignedHeader(headers);
 
     final canonicalRequest = buildCanonicalRequest(datetime, httpMethod, uri,
         requestPayload, headers, hashedPayload, queryParams, signedHeaders);
-
-    print(canonicalRequest);
 
     final credentialScope =
         '${datetime.substring(0, 8)}/$region/s3/aws4_request'; //datetime.substring(0,8) is used because only the date is needed.
@@ -84,23 +65,6 @@ class AWSSigV4Signer {
         buildFinalSigningInformation(credentialScope, signedHeaders, signature);
 
     return authorizationHeader;
-  }
-
-  buildEncodedPolicy(policy) {
-    return base64.encode(utf8.encode(policy));
-  }
-
-  buildPolicy(String credentialScope, String datetime) {
-    final String policy = '''{
-        "conditions":[
-          {"x-amz-credential": "$credentialScope"},
-          {"x-amz-algorithm": "AWS4-HMAC-SHA256"},
-          {"x-amz-date": "$datetime" },
-        ]
-      }
-''';
-
-    return policy;
   }
 
   buildFinalSigningInformation(
@@ -180,6 +144,7 @@ class AWSSigV4Signer {
     return canonicalHeaders;
   }
 
+  ///Returns a map that would serve as the header if the request
   Map<String, String> constructHeader(String datetime, String hashedPayload) {
     //This method ois to construct the header, this is different from the whole authorization header.
 
@@ -187,17 +152,7 @@ class AWSSigV4Signer {
       'host': hostEndpoint,
       'x-amz-date': datetime,
       'x-amz-content-sha256': hashedPayload,
-      // 'date': 'Fri, 24 May 2013 00:00:00 GMT',
-      // 'x-amz-storage-class': 'REDUCED_REDUNDANCY'
     };
-
-    // headers = {
-
-    //   'host': hostEndpoint as String,
-    //   'x-amz-date': datetime,
-    //   'x-amz-content-sha256': hashedPayload
-    // };
-    // 'x-amz-acl': 'private', 'x-amz-security-token
 
     return headers;
   }

@@ -8,6 +8,7 @@ environment:
 dependencies:
   dio: ^4.0.6
   http: ^0.13.5
+  mocktail: ^0.3.0
   path: ^1.8.0
   rxdart: ^0.27.7
   state_notifier: ^0.7.0

@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:developer';
 
 import 'package:aws_storage_service/src/aws_storage_service.dart';
 import 'package:aws_storage_service/src/aws_storage_service/aws_upload_service/multipart_upload/uploading_counter.dart';
@@ -12,6 +11,7 @@ import '../../../aws_signer/utils.dart';
 import '../upload_utils/upload_function.dart';
 import 'multipart_upload_controller.dart';
 
+///[MultipartFileUpload] handles files upload in chunks.. For files of size greater than 6 mb
 class MultipartFileUpload extends UploadTask {
   final UploadingNumberNotifier _uploadingNumberNotifier =
       UploadingNumberNotifier();
@@ -22,12 +22,13 @@ class MultipartFileUpload extends UploadTask {
   final Function(List<List<dynamic>> etagList, String versionId)?
       onUploadComplete; //A function that would be called when all upload is done
 
-  //This is the function that would be called once the version id s created.
-  //Other actions by the can be done, maybe caching the version id.
+  ///[onVersionIdCreated] would be called once the version id is created.
+  ///
+  ///Other actions by the can be done, maybe caching the version id to be used for resuming the download later
   final Function(String)? onVersionIdCreated;
 
-  // a function that would be called when an error is encountered
-  //It returns the error, the version id of the file and the etagList that has been uploaded sofar
+  ///[onError] that would be called when an error is encountered
+  ///It returns the error, the version id of the file and the etagList that has been uploaded sofar
   final Function(String error, String versionId, List<List<dynamic>> etagList)?
       onError;
 
@@ -52,7 +53,7 @@ class MultipartFileUpload extends UploadTask {
     this.onVersionIdCreated,
     this.onPartUploadComplete,
     this.numberOfParallelUploads =
-        2, //This is the default number of uploads to be done in parallel
+        2, //This is the default number of uploads to be done in parallel, can be increased as you so wish
   }) {
     _uploadingNumberNotifier.addListener(_shouldUpload, fireImmediately: false);
     _uploadingNumberNotifier.addListener(_calculateUploadProgress,
@@ -85,6 +86,7 @@ class MultipartFileUpload extends UploadTask {
     return prepareOrCreateSuccess;
   }
 
+  ///Upload a part of the chunk that was vreated
   Future _uploadPart() async {
     //What this function would do is take a chunk and upload it.
     //It is called automatically when a
@@ -145,10 +147,13 @@ class MultipartFileUpload extends UploadTask {
     });
   }
 
+  ///Pause an upload that is currently on
+  ///
+  ///Note the last request wouldnt be stopped, yet.
   Future pauseUpload() async {
-    ///This function would be used to pause an upload.
-    ///Basically, all the requests are stopped.
-    ///The error callback is triggered after the pauseUpload is called.
+    //This function would be used to pause an upload.
+    //Basically, all the requests are stopped.
+    //The error callback is triggered after the pauseUpload is called.
 
     _fileUploadController.uploadPaused = true;
   }
@@ -161,7 +166,8 @@ class MultipartFileUpload extends UploadTask {
     int uploadedChunks = _fileUploadController.etagsLists.length;
 
     int numberOfBytesUploaded =
-        uploadedChunks ~/ totalChunks * _fileUploadController.fileLength;
+        ((uploadedChunks / totalChunks) * _fileUploadController.fileLength)
+            .toInt();
 
     _uploadProgress
         .add([numberOfBytesUploaded, _fileUploadController.fileLength]);
@@ -198,17 +204,9 @@ class MultipartFileUpload extends UploadTask {
         headers: headers,
         url: Uri.https(config.credentailsConfig.host, config.url, queryParams)
             .toString(),
-        onSendComplete: (response) {
+        onSendComplete: (response, versionId) {
           //In the onsend complete, save the etag list and the part number
           //First get the etag.
-
-          log('Chunk sent completely');
-
-          log('This is the status code ${response.statusCode}\n');
-
-          log('This is the response body${response.body}\n');
-          log('This is the header${response.headers}\n');
-          log('This the reason phrase ${response.reasonPhrase}\n');
 
           String etag = response.headers['etag'];
           _fileUploadController.addEtag([partNumber, etag]);
@@ -260,7 +258,6 @@ class MultipartFileUpload extends UploadTask {
           (value) {
             config.versionId = value;
 
-            print('version id created $value');
             onVersionIdCreated?.call(value);
             createMultipartUploadComplete.complete(true);
           },
@@ -308,9 +305,9 @@ class MultipartFileUpload extends UploadTask {
     return createMultipartUploadComplete.future;
   }
 
+  ///Close the streams
   @override
   void dispose() {
-    //Close the streams
     _uploadCompletedUpdate.close();
     _uploadProgress.close();
   }

@@ -8,6 +8,7 @@ import 'package:rxdart/rxdart.dart';
 
 import '../../aws_signer/utils.dart';
 
+///This handles the upload of an object, e.g Strings or text objects in general
 class UploadObject extends UploadTask {
   final UploadTaskConfig config;
 
@@ -19,7 +20,8 @@ class UploadObject extends UploadTask {
   @override
   Stream<List<int>> get uploadProgress => _uploadProgress.asBroadcastStream();
 
-  final Function(dynamic response)? onUploadComplete;
+  ///[onUploadComplete] is called when the upload has been completed. It gives the response and teh version id
+  final Function(dynamic response, String versionId)? onUploadComplete;
 
   UploadObject({required this.config, this.onUploadComplete});
 
@@ -56,6 +58,7 @@ class UploadObject extends UploadTask {
 
     final Completer<bool> uploadCompleter = Completer();
 
+    //Upload the object
     await dio.put(
       'https://${config.credentailsConfig.host}/${config.url}',
       data: config.content,
@@ -65,7 +68,7 @@ class UploadObject extends UploadTask {
       },
     ).then(
       (value) {
-        onUploadComplete?.call(value);
+        onUploadComplete?.call(value, value.headers['x-amz-version-id']![0]);
         uploadCompleter.complete(true);
       },
       onError: (error) {
