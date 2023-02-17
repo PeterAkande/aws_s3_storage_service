@@ -2,9 +2,11 @@ name: aws_storage_service
 description: A package that handles Uploads and Downloads to the AWS S3 service
 version: 1.0.0
 environment:
-  sdk: '>=2.18.4 <3.0.0'
+  sdk: '>=2.18.4 <3.7.0'
 
 dependencies:
+  convert: ^3.1.1
+  crypto: ^3.0.2
   dio: ^4.0.6
   http: ^0.13.5
   mocktail: ^0.3.0
