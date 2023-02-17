@@ -1,7 +1,6 @@
 name: aws_storage_service
-description: A sample command-line application.
+description: A package that handles Uploads and Downloads to the AWS S3 service
 version: 1.0.0
-# homepage: https://www.example.com
 environment:
   sdk: '>=2.18.4 <3.0.0'
 
