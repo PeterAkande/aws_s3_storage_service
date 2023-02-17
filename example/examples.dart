@@ -5,7 +5,7 @@ import 'package:path/path.dart' as p;
 import 'package:aws_storage_service/src/aws_storage_service.dart';
 
 AwsCredentialsConfig credentialsConfig = AwsCredentialsConfig(
-  accessKey: 'YOURACCESSKEY', // This is a test accessKey, It is invallid here
+  accessKey: 'YOURACCESSKEY', // This is a test accessKey
   bucketName: 'testbucket', // The bucket name
   region: 'us-west-2', // The region of your Aws bucket allocation
   secretKey: 'YOURAWSSECRETKEY', // Your secret Key
