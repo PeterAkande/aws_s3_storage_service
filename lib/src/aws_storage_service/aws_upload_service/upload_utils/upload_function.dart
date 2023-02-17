@@ -1,6 +1,6 @@
 import 'dart:async';
 
-import 'package:dio/dio.dart';
+// import 'package:dio/dio.dart';
 import 'package:http/http.dart' as http;
 
 Future<bool> fileUploader(
@@ -19,13 +19,13 @@ Future<bool> fileUploader(
   //   Headers.contentLengthHeader: bytesPayload.length.toString(),
   // });
 
-  BaseOptions options = BaseOptions(
-      headers: headers,
-      method: 'PUT',
-      // responseType: ResponseType.bytes,
-      contentType: 'application/octet-stream');
+  // BaseOptions options = BaseOptions(
+  //     headers: headers,
+  //     method: 'PUT',
+  //     // responseType: ResponseType.bytes,
+  //     contentType: 'application/octet-stream');
 
-  final Dio dio = Dio(options);
+  // final Dio dio = Dio(options);
 
   Completer<bool> uploadCompleter = Completer();
 

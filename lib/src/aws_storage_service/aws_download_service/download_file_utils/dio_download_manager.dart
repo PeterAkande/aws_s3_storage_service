@@ -123,13 +123,13 @@ class DioDownloadManager extends DioForNative {
       (data) {
         subscription.pause();
         // Write file asynchronously
-        asyncWrite = raf.writeFrom(data).then((_raf) {
+        asyncWrite = raf.writeFrom(data).then((raf) {
           // Notify progress
           received += data.length;
 
           onReceiveProgress?.call(received, total);
 
-          raf = _raf;
+          raf = raf;
           if (cancelToken == null || !cancelToken.isCancelled) {
             subscription.resume();
           }
