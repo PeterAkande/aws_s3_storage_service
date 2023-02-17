@@ -1,7 +1,7 @@
 A simple Package to handle Uploads, Multipart Uploads and Downloads in Dart
 and Flutter apps.
 
-``dart
+```dart
 import 'dart:io';
 
 import 'package:path/path.dart' as p;
