@@ -1,4 +1,4 @@
-import '../example/examples.dart';
+import '../example/example.dart';
 
 void main(List<String> arguments) async {
   await testFunctions();
