@@ -7,6 +7,6 @@ export 'utils/aws_credentials_config.dart';
 
 // extension on Completer {
 //   completeWithDetails(){
-    
+
 //   }
 // }

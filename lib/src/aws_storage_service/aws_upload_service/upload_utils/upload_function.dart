@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io';
 
 // import 'package:dio/dio.dart';
 import 'package:http/http.dart' as http;
@@ -30,29 +31,38 @@ Future<bool> fileUploader(
   Completer<bool> uploadCompleter = Completer();
 
   //////////////////////////////////////////////
-  // try {
-  var resp = await http
-      .put(
-    Uri.parse(url),
-    body: bytesPayload,
-    headers: headers,
-  )
-      .then(
-    (value) {
-      if (value.statusCode == 200) {
-        onSendComplete?.call(value, value.headers['x-amz-version-id'] ?? '');
-        uploadCompleter.complete(true);
-      } else {
-        print(value.body);
+  try {
+    await http
+        .put(
+      Uri.parse(url),
+      body: bytesPayload,
+      headers: headers,
+    )
+        .then(
+      (value) {
+        if (value.statusCode == 200) {
+          onSendComplete?.call(value, value.headers['x-amz-version-id'] ?? '');
+          uploadCompleter.complete(true);
+        } else {
+          print(value.body);
+          uploadCompleter.complete(false);
+        }
+      },
+      onError: (error) {
+        // print(error);
+        //An error occurred. Return it that the opetation was not successul
         uploadCompleter.complete(false);
-      }
-    },
-    onError: (error) {
-      print(error);
-      //An error occurred. Return it that the opetation was not successul
+      },
+    );
+  } catch (exception) {
+    if (exception is SocketException) {
+      //Do something else here
+      //Todo: Incluse an error callback parameter to this function
       uploadCompleter.complete(false);
-    },
-  );
+    }
+
+    uploadCompleter.complete(false);
+  }
 
   // var request = MultipartRequest(
   //   'PUT',
