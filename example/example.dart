@@ -43,7 +43,8 @@ Future testResumeDownload() async {
     config: config,
     onRecieveProgress: ((totalDownloaded, totalSize) =>
         print('Upload Status Callback ===> $totalDownloaded/$totalSize')),
-    errorCallback: (errorMessage) => print('An error occurred $errorMessage'),
+    errorCallback: (errorMessage, statusCode) =>
+        print('An error occurred $errorMessage'),
   ); // Create  a download file instance
 
   bool prepSuccessful =
@@ -78,7 +79,8 @@ Future testDownload() async {
     config: config,
     onRecieveProgress: ((totalDownloaded, totalSize) =>
         print('Upload Status Callback ===> $totalDownloaded/$totalSize')),
-    errorCallback: (errorMessage) => print('An error occurred $errorMessage'),
+    errorCallback: (errorMessage, statusCode) =>
+        print('An error occurred $errorMessage'),
   );
 
   bool prepSuccessful = await downloadFile.prepareDownload();

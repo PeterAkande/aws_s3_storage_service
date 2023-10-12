@@ -34,7 +34,7 @@ class DownloadFile {
   final Function(int totalDownloaded, int totalSize)? onRecieveProgress;
 
   ///Callback when an error occures
-  final Function(String errorMessage)? errorCallback;
+  final Function(String errorMessage, int? statusCode)? errorCallback;
 
   DownloadFile(
       {required this.config, this.onRecieveProgress, this.errorCallback});
@@ -66,7 +66,8 @@ class DownloadFile {
       if (!fileTobeResumed.existsSync()) {
         //Complete the function with false.
         errorCallback?.call(
-            'File to be resumed does not exist. Please set resume download to false to download a new file');
+            'File to be resumed does not exist. Please set resume download to false to download a new file',
+            404);
 
         if (config.continueDownloadIfFileDoesNotExist) {
           config.resumeDownload = false;
@@ -115,9 +116,9 @@ class DownloadFile {
           // print(error);
           if (error.type == DioErrorType.cancel) {
             //It was cancelled using the cancel token
-            errorCallback?.call('Dio cancel Error');
+            errorCallback?.call('Dio cancel Error', 400);
           } else {
-            errorCallback?.call(error.toString());
+            errorCallback?.call(error.toString(), error.response.statusCode);
           }
 
           dispose();
@@ -127,9 +128,9 @@ class DownloadFile {
     } catch (error) {
       if ((error as dynamic).type == DioErrorType.cancel) {
         //It was cancelled using the cancel token
-        errorCallback?.call('Dio cancel Error');
+        errorCallback?.call('Dio cancel Error', 400);
       } else {
-        errorCallback?.call(error.toString());
+        errorCallback?.call(error.toString(), 400);
       }
 
       dispose();
