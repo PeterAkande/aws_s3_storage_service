@@ -8,3 +8,6 @@
 
 ## 1.0.5
 - Fix error with import statement
+
+## 1.0.6
+- Upgrade Used packages
