@@ -11,3 +11,6 @@
 
 ## 1.0.6
 - Upgrade Used packages
+
+## 1.0.7
+- Add status code to error callback function
