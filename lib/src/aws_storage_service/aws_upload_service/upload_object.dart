@@ -58,6 +58,9 @@ class UploadObject extends UploadTask {
 
     final Completer<bool> uploadCompleter = Completer();
 
+    //Before Uploading the Object, Add the First Upload Stream.
+    _uploadProgress.add([0, config.content?.length ?? 0]);
+
     //Upload the object
     await dio.put(
       'https://${config.credentailsConfig.host}/${config.url}',

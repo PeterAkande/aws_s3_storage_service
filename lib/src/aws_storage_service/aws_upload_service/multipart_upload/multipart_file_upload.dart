@@ -83,6 +83,12 @@ class MultipartFileUpload extends UploadTask {
       prepareOrCreateSuccess = await _createMultipartUpload();
     }
 
+    // Check if the preparation was successful. It was, add an uploadProgress to the stream
+    //i The upload progress can be added by calling _calculateUploadp
+
+    _calculateUploadProgress(
+        0); // The 0 is just a random number since it is not used
+
     return prepareOrCreateSuccess;
   }
 

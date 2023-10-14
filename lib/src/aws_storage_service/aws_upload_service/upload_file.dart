@@ -55,6 +55,9 @@ class UploadFile extends UploadTask {
     var header = client.headers;
     header['Authorization'] = authorizationHeader;
 
+    //Before Uploading the File, Add the First Upload Stream.
+    _uploadProgress.add([0, fileByte.length]);
+
     //Now upload the file
     final bool uploadSuccessful = await fileUploader(
         onSendProgress: (count, total) {
