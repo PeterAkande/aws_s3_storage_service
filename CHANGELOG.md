@@ -17,3 +17,6 @@
 
 ## 1.0.8
 - Add Initial Upload Progress stream Triggers
+
+## 1.0.9
+- Fix issue with onSend Progress not being called after bytes payload upload

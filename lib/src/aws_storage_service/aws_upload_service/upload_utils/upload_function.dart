@@ -43,6 +43,9 @@ Future<bool> fileUploader(
         if (value.statusCode == 200) {
           onSendComplete?.call(value, value.headers['x-amz-version-id'] ?? '');
           uploadCompleter.complete(true);
+
+          //The upload is done
+          onSendProgress?.call(bytesPayload.length, bytesPayload.length);
         } else {
           print(value.body);
           uploadCompleter.complete(false);
