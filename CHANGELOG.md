@@ -14,3 +14,6 @@
 
 ## 1.0.7
 - Add status code to error callback function
+
+## 1.0.8
+- Add Initial Upload Progress stream Triggers
