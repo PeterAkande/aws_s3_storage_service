@@ -278,7 +278,7 @@ class MultipartFileUploadController {
 
     _fileChunksIndexes = await receivePort.first as List<List<int>>;
 
-    _numberOfParts = _fileChunksIndexes.length;
+    _numberOfParts = _fileChunksIndexes.length + alreadyUploadedParts.length;
 
     return _fileChunksIndexes; //Return the file chunk indexes since this would be run in an isolate
   }

@@ -20,3 +20,6 @@
 
 ## 1.0.9
 - Fix issue with onSend Progress not being called after bytes payload upload
+
+## 1.0.9
+- Fix issue with the calculation of the number of parts in the case of resuming an upload
