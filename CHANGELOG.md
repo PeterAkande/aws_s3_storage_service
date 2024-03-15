@@ -23,3 +23,6 @@
 
 ## 1.0.10
 - Fix issue with the calculation of the number of parts in the case of resuming an upload
+  
+## 1.1.0
+- Add cloud front host support

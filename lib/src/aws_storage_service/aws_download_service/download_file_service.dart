@@ -44,6 +44,9 @@ class DownloadFile {
 
   ///[prepareDownload] initialize the needed parameters that are needed for the download operation
   Future<bool> prepareDownload() async {
+    // Todo: Take into consideration the calculation of headers for Cloudfront
+    // Signing
+
     String datetime = Utils.generateDatetime();
     final Completer<bool> preparationCompleter = Completer();
 
@@ -72,7 +75,7 @@ class DownloadFile {
         if (config.continueDownloadIfFileDoesNotExist) {
           config.resumeDownload = false;
           preparationCompleter.complete(true);
-          return true;
+          return true; // Not needed but stops this the parent block here.
         }
 
         preparationCompleter.complete(false);
@@ -92,8 +95,15 @@ class DownloadFile {
   Future<bool> download() async {
     final Completer<bool> downloadCompleter = Completer();
 
-    String uploadUrl =
-        'https://${config.credentailsConfig.host}/${Uri.encodeComponent(config.url)}';
+    late String uploadUrl;
+
+    if (config.credentailsConfig.clourFrontHostUrl.isEmpty) {
+      uploadUrl =
+          'https://${config.credentailsConfig.host}/${Uri.encodeComponent(config.url)}';
+    } else {
+      uploadUrl =
+          'https://${config.credentailsConfig.clourFrontHostUrl}/${Uri.encodeComponent(config.url)}';
+    }
 
     Options options = Options(headers: _header);
 
@@ -112,8 +122,6 @@ class DownloadFile {
           downloadCompleter.complete(true);
         },
         onError: (error) {
-          // print(error.type);
-          // print(error);
           if (error.type == DioErrorType.cancel) {
             //It was cancelled using the cancel token
             errorCallback?.call('Dio cancel Error', 400);
