@@ -5,22 +5,25 @@ import 'package:path/path.dart' as p;
 import 'package:aws_storage_service/src/aws_storage_service.dart';
 
 AwsCredentialsConfig credentialsConfig = AwsCredentialsConfig(
-  accessKey: 'YOURACCESSKEY', // This is a test accessKey
-  bucketName: 'testbucket', // The bucket name
-  region: 'us-west-2', // The region of your Aws bucket allocation
-  secretKey: 'YOURAWSSECRETKEY', // Your secret Key
-);
+    accessKey: 'YOURACCESSKEY', // This is a test accessKey
+    bucketName: 'testbucket', // The bucket name
+    region: 'us-west-2', // The region of your Aws bucket allocation
+    secretKey: 'YOURAWSSECRETKEY', // Your secret Key
+
+    cloudFrontHostUrl: "db1fyjgiopmaw.cloudfront.net");
 
 testFunctions() async {
-  await testFileUpload(); // This tests the file upload
+  // await testFileUpload(); // This tests the file upload
 
-  await testMultipartUpload(); // Test mulltipart upload
+  // await testMultipartUpload(); // Test mulltipart upload
 
-  await testResumeMultipartUpload(); //  Test resuming multipart upload
+  // await testResumeMultipartUpload(); //  Test resuming multipart upload
 
-  await testDownload(); // Test download
+  // await testDownload(); // Test download
 
-  await testResumeDownload(); // Test resume download
+  // await testResumeDownload(); // Test resume download
+
+  await testCloudFrontDownload();
 }
 
 Future testResumeDownload() async {
@@ -68,6 +71,42 @@ Future testDownload() async {
   String filePath = p.join(Directory.current.path, 'test_download.mp4');
 
   String fileUrl = 'file/ftest.mp4'; //The file URl in the bucket
+
+  DownloadFileConfig config = DownloadFileConfig(
+    credentailsConfig: credentialsConfig,
+    url: fileUrl,
+    downloadPath: filePath,
+  );
+
+  DownloadFile downloadFile = DownloadFile(
+    config: config,
+    onRecieveProgress: ((totalDownloaded, totalSize) =>
+        print('Upload Status Callback ===> $totalDownloaded/$totalSize')),
+    errorCallback: (errorMessage, statusCode) =>
+        print('An error occurred $errorMessage'),
+  );
+
+  bool prepSuccessful = await downloadFile.prepareDownload();
+  print('The download was prepared Successfully $prepSuccessful');
+
+  downloadFile.downloadProgress.listen((event) {
+    print('Upload Status Stream ===> ${event[0]}/${event[1]}');
+  });
+
+  if (prepSuccessful) {
+    await downloadFile.download().then((value) {
+      downloadFile.dispose();
+    });
+  }
+}
+
+Future testCloudFrontDownload() async {
+  //Initiate a new upload
+  String filePath =
+      p.join(Directory.current.path, 'filmora-mac_setup_full718.dmg');
+
+  String fileUrl =
+      'files/peter_219048d6-9720-46b5-b4dd-00fddb158763/filmora-mac_setup_full718.dmg'; //The file URl in the bucket
 
   DownloadFileConfig config = DownloadFileConfig(
     credentailsConfig: credentialsConfig,

@@ -96,16 +96,17 @@ class DownloadFile {
     final Completer<bool> downloadCompleter = Completer();
 
     late String uploadUrl;
+    late Options options;
 
-    if (config.credentailsConfig.clourFrontHostUrl.isEmpty) {
+    if (config.credentailsConfig.cloudFrontHostUrl.isEmpty) {
       uploadUrl =
           'https://${config.credentailsConfig.host}/${Uri.encodeComponent(config.url)}';
+      options = Options(headers: _header);
     } else {
       uploadUrl =
-          'https://${config.credentailsConfig.clourFrontHostUrl}/${Uri.encodeComponent(config.url)}';
+          'https://${config.credentailsConfig.cloudFrontHostUrl}/${Uri.encodeComponent(config.url)}';
+      options = Options();
     }
-
-    Options options = Options(headers: _header);
 
     try {
       await DioDownloadManager().download(uploadUrl, config.downloadPath,

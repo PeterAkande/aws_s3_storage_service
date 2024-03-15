@@ -5,14 +5,14 @@ class AwsCredentialsConfig {
   String region;
   String bucketName;
   String host = '';
-  String clourFrontHostUrl;
+  String cloudFrontHostUrl;
 
   AwsCredentialsConfig({
     required this.accessKey,
     required this.bucketName,
     required this.region,
     required this.secretKey,
-    this.clourFrontHostUrl = '',
+    this.cloudFrontHostUrl = '',
   }) {
     host = '$bucketName.s3.amazonaws.com';
   }

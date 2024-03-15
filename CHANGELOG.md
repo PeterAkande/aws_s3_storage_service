@@ -26,3 +26,6 @@
   
 ## 1.1.0
 - Add cloud front host support
+  
+## 1.1.1
+- Fix cloud front header issue
